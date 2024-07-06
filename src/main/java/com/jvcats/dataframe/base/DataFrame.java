@@ -244,7 +244,18 @@ public class DataFrame {
      * @return The value in specified location.
      */
     public double locDbl(int row, int col) {
-        return (this.locCol(row, col).getDbls()[0]);
+        return (this.getCol(col).getDbls()[row]);
+    }
+
+    /**
+     * Select a double value from a double column of a DataFrame.
+     *
+     * @param row The row of the value.
+     * @param colname The column of the value.
+     * @return The value in specified location.
+     */
+    public double locDbl(int row, String colname) {
+        return (this.getCol(colname).getDbls()[row]);
     }
 
     /**
@@ -255,7 +266,18 @@ public class DataFrame {
      * @return The value in specified location.
      */
     public String locStr(int row, int col) {
-        return (this.locCol(row, col).getStrs()[0]);
+        return (this.getCol(col).getStrs()[row]);
+    }
+
+    /**
+     * Select a string value from a string column of a DataFrame.
+     *
+     * @param row The row of the value.
+     * @param colname The column of the value.
+     * @return The value in specified location.
+     */
+    public String locStr(int row, String colname) {
+        return (this.getCol(colname).getStrs()[row]);
     }
 
     /**
@@ -266,7 +288,18 @@ public class DataFrame {
      * @return The value in specified location.
      */
     public int locInt(int row, int col) {
-        return (this.locCol(row, col).getInts()[0]);
+        return (this.getCol(col).getInts()[row]);
+    }
+
+    /**
+     * Select an integer value from an integer column of a DataFrame.
+     *
+     * @param row The row of the value.
+     * @param colname The column of the value.
+     * @return The value in specified location.
+     */
+    public int locInt(int row, String colname) {
+        return (this.getCol(colname).getInts()[row]);
     }
 
     /**
@@ -277,7 +310,18 @@ public class DataFrame {
      * @param value The value to be set.
      */
     public void setDbl(int row, int col, double value) {
-        this.locCol(row, col).setDbl(value, 0);
+        this.getCol(col).setDbl(value, row);
+    }
+
+    /**
+     * Set a double value to a double column of a DataFrame.
+     *
+     * @param row The row of the value.
+     * @param colname The column of the value.
+     * @param value The value to be set.
+     */
+    public void setDbl(int row, String colname, double value) {
+        this.getCol(colname).setDbl(value, row);
     }
 
     /**
@@ -288,7 +332,18 @@ public class DataFrame {
      * @param value The value to be set.
      */
     public void setStr(int row, int col, String value) {
-        this.locCol(row, col).setStr(value, 0);
+        this.getCol(col).setStr(value, row);
+    }
+
+    /**
+     * Set a string value to a string column of a DataFrame.
+     *
+     * @param row The row of the value.
+     * @param colname The column of the value.
+     * @param value The value to be set.
+     */
+    public void setStr(int row, String colname, String value) {
+        this.getCol(colname).setStr(value, row);
     }
 
     /**
@@ -299,7 +354,18 @@ public class DataFrame {
      * @param value The value to be set.
      */
     public void setInt(int row, int col, int value) {
-        this.locCol(row, col).setInt(value, 0);
+		this.getCol(col).setInt(value, row);
+    }
+
+    /**
+     * Set an integer value to an integer column of a DataFrame.
+     *
+     * @param row The row of the value.
+     * @param colname The column of the value.
+     * @param value The value to be set.
+     */
+    public void setInt(int row, String colname, int value) {
+		this.getCol(colname).setInt(value, row);
     }
 
     /**
@@ -332,6 +398,17 @@ public class DataFrame {
      */
     public DataFrame loc(int row, int col) {
         return (this.rloc(row).cloc(col));
+    }
+
+    /**
+     * Get a value DataFrame from a DataFrame.
+     *
+     * @param row The row of the value.
+     * @param colname The column of the value.
+     * @return The double value DataFrame.
+     */
+    public DataFrame loc(int row, String colname) {
+        return (this.rloc(row).cloc(colname));
     }
 
     /**
@@ -2957,9 +3034,10 @@ public class DataFrame {
     }
 
     private static String determineColType(String header, String[] obs) {
-        char[] number = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'};
+        char[] number = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-'};
         int notNum;
         int points;
+        int minus;
         boolean missing = false;
         boolean isStr = false;
         boolean isDbl = false;
@@ -2970,6 +3048,7 @@ public class DataFrame {
                     break;
                 }
                 points = 0;
+                minus = 0;
                 for (int j = 0; j < i.length(); j++) {
                     if (isStr) {
                         break;
@@ -2986,6 +3065,14 @@ public class DataFrame {
                             isInt = false;
                         }
                     }
+                    if (i.charAt(j) == '-') {
+                        minus++;
+                        if (minus >= 2) {
+                            isDbl = false;
+                            isStr = true;
+                            isInt = false;
+                        }
+                    }
                     for (char k : number) {
                         if (i.charAt(j) == k) {
                             break;
@@ -2993,7 +3080,7 @@ public class DataFrame {
                             notNum++;
                         }
                     }
-                    if (notNum == 11) {
+                    if (notNum == 12) {
                         isStr = true;
                         isDbl = false;
                         isInt = false;
